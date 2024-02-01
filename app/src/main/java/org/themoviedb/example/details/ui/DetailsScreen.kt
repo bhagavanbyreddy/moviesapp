@@ -99,6 +99,7 @@ fun DetailsScreen(navController: NavController, viewModel: DetailsViewModel = vi
     }
 }
 
+// poster composable
 @Composable
 fun Poster(detailsData: DetailsModel) {
     Box(
