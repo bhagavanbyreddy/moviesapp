@@ -9,7 +9,7 @@ import org.themoviedb.example.util.Constants.Companion.FAVORITE
 data class FavoriteModel(
 
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    @SerializedName("id") var showId: Int? = null,
+    @SerializedName("id") val showId: Int? = null,
 
 
 )

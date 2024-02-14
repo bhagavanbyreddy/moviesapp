@@ -10,14 +10,14 @@ import retrofit2.http.Query
 interface TvShowsApiInterface {
     @GET("trending/tv/week")
     suspend fun getTrendingLists(
-        @Header("accept") accept: String,
+        @Header("accept") accept: String? = "application/json",
         @Query("language") language: String? = "en-US",
         @Query("api_key") apiKey: String? = Constants.API_KEY
     ): Response<WeeklyTrendingMovies>
 
     @GET("search/tv")
     suspend fun getSearchLists(
-        @Header("accept") accept: String,
+        @Header("accept") accept: String? = "application/json",
         @Query("query") query: String,
         @Query("include_adult") contentType: Boolean = false,
         @Query("language") language: String? = "en-US",

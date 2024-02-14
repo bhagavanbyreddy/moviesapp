@@ -9,6 +9,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.themoviedb.example.db.dao.FavoriteDao
@@ -38,11 +39,11 @@ class DetailsViewModel @Inject constructor(
         var hasFav: Boolean = false;
         if (id > -1) {
             CoroutineScope(Dispatchers.IO).launch {
-                favoriteDao.getAllFavorites().forEach {
-                    if (it.showId == id) {
-                        hasFav = true
+                    favoriteDao.getAllFavorites().forEach {
+                        if (it.showId == id) {
+                            hasFav = true
+                        }
                     }
-                }
                 if (!hasFav)
                     favoriteDao.insertFavorite(FavoriteModel(showId = id))
                 _state.update {
@@ -62,12 +63,12 @@ class DetailsViewModel @Inject constructor(
         var favId = -1;
         if (id > -1) {
             CoroutineScope(Dispatchers.IO).launch {
-                favoriteDao.getAllFavorites().forEach {
-                    if (it.showId == id) {
-                        hasFav = true
-                        favId = it.id
+                    favoriteDao.getAllFavorites().forEach {
+                        if (it.showId == id) {
+                            hasFav = true
+                            favId = it.id
+                        }
                     }
-                }
                 if (hasFav)
                     favoriteDao.deleteFavorite(FavoriteModel(showId = id, id = favId))
 
@@ -98,12 +99,12 @@ class DetailsViewModel @Inject constructor(
                         )
                     }
                 }
-
                 favoriteDao.getAllFavorites().forEach {
-                    if (it.showId == id.toInt()) {
-                        hasFav = true
+                        if (it.showId == id.toInt()) {
+                            hasFav = true
+                        }
                     }
-                }
+
                 _state.update {
                     it.copy(
                         isFavorite = hasFav
@@ -124,12 +125,11 @@ class DetailsViewModel @Inject constructor(
                         )
                     }
                 }
-
                 favoriteDao.getAllFavorites().forEach {
-                    if (it.showId == id.toInt()) {
-                        hasFav = true
+                        if (it.showId == id.toInt()) {
+                            hasFav = true
+                        }
                     }
-                }
                 _state.update {
                     it.copy(
                         isFavorite = hasFav

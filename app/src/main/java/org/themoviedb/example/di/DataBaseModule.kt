@@ -9,11 +9,12 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import org.themoviedb.example.db.MovieDbDataBase
 import org.themoviedb.example.db.dao.FavoriteDao
+import org.themoviedb.example.home.data.repository.TvShowsLocalDataSourceImpl
+import org.themoviedb.example.home.domain.repository.TvShowsLocalDataSource
 import org.themoviedb.example.util.Constants.Companion.MOVIE_DB_NAME
 import javax.inject.Singleton
-
+@Module()
 @InstallIn(SingletonComponent::class)
-@Module
 object DataBaseModule {
     @Provides
     @Singleton
@@ -22,11 +23,18 @@ object DataBaseModule {
             appContext,
             MovieDbDataBase::class.java,
             MOVIE_DB_NAME
-        ).fallbackToDestructiveMigrationFrom(6).build()
+        ).build()
     }
 
     @Provides
+    @Singleton
     fun provideFavoriteDao(db: MovieDbDataBase): FavoriteDao {
         return db.getFavoriteDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideTvShowsLocalDataSource(dao: FavoriteDao): TvShowsLocalDataSource {
+        return TvShowsLocalDataSourceImpl(dao)
     }
 }

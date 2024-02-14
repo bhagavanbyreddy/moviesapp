@@ -4,7 +4,6 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
@@ -17,10 +16,13 @@ import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.themoviedb.example.db.dao.FavoriteDao
+import org.themoviedb.example.home.domain.repository.TvShowsLocalDataSource
+import org.themoviedb.example.home.domain.usecase.GetTvShows
 import org.themoviedb.example.home.model.Results
 import org.themoviedb.example.home.repository.TvShowsRepository
 import org.themoviedb.example.home.ui.HomeScreenState
@@ -29,14 +31,16 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
+    private val useCase: GetTvShows,
     private val repository: TvShowsRepository,
-    private val favoriteDao: FavoriteDao
+    private val localDataSource: TvShowsLocalDataSource
 
-) : ViewModel() {
+    ) : ViewModel() {
     private val _state = MutableStateFlow(HomeScreenState())
     val state: StateFlow<HomeScreenState> = _state.asStateFlow()
     private var textSearch = MutableStateFlow("")
     private var searchJob = SupervisorJob()
+    private var getTvShowsJob: Job? = null
 
     init {
         _state.update {
@@ -46,36 +50,19 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun topList() {
-        CoroutineScope(Dispatchers.IO).launch {
-            repository.getAllPlaylists().collect { result ->
-                result.body()?.results.let {
+        Log.d("call1:::","true")
+        //getTvShowsJob?.cancel()
+        viewModelScope.launch(Dispatchers.IO) {
+            useCase.execute().collect { tvShows ->
+                tvShows.results.let { playLists ->
                     _state.update {
                         it.copy(
                             refreshing = false,
-                            playlists = result.body()?.results ?: arrayListOf()
+                            playlists = playLists
                         )
                     }
 
                 }
-                val data = result.body()?.results?.map { result1 ->
-                    var hasFav = false
-
-                    favoriteDao.getAllFavorites().forEach {db ->
-                        if (db.showId == result1.id ) {
-                            hasFav = true
-                        }
-                    }
-                    result1.isFavorite = hasFav
-                    result1.copy(isFavorite = hasFav)
-
-                }?.toList()
-
-                _state.update { sata->
-                    sata.copy(
-                        playlists = data as ArrayList<Results>
-                    )
-                }
-
             }
         }
     }
@@ -134,11 +121,11 @@ class HomeViewModel @Inject constructor(
                     val data = it.body()?.results?.map { result ->
                         var hasFav = false
 
-                        favoriteDao.getAllFavorites().forEach {db ->
-                            if (db.showId == result.id ) {
-                                hasFav = true
+                        localDataSource.getAllFavorites().forEach {db ->
+                                if (db.showId == result.id ) {
+                                    hasFav = true
+                                }
                             }
-                        }
                         result.isFavorite = hasFav
                         result.copy(isFavorite = hasFav)
 

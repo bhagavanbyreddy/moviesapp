@@ -9,9 +9,6 @@ import org.themoviedb.example.db.model.FavoriteModel
 @Database(
     entities = [FavoriteModel::class],
     version = 1,
-    exportSchema = true,
-    autoMigrations = [
-    ],
 )
 abstract class MovieDbDataBase : RoomDatabase() {
     abstract fun getFavoriteDao(): FavoriteDao

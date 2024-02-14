@@ -13,8 +13,16 @@ import kotlinx.coroutines.Dispatchers
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import org.themoviedb.example.BuildConfig
+import org.themoviedb.example.db.MovieDbDataBase
 import org.themoviedb.example.details.repository.DetailsApiInterface
+import org.themoviedb.example.home.data.repository.TvShowsLocalDataSourceImpl
+import org.themoviedb.example.home.data.repository.TvShowsRemoteDataSourceImpl
+import org.themoviedb.example.home.domain.repository.TvShowsLocalDataSource
+import org.themoviedb.example.home.domain.repository.TvShowsRemoteDataSource
+import org.themoviedb.example.home.domain.usecase.GetTvShows
 import org.themoviedb.example.home.repository.TvShowsApiInterface
+import org.themoviedb.example.home.repository.TvShowsRepository
+import org.themoviedb.example.home.repository.TvShowsRepositoryImpl
 import org.themoviedb.example.util.NetworkInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -22,7 +30,7 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
 
-@Module
+@Module(includes = [DataBaseModule::class])
 @InstallIn(SingletonComponent::class)
 object RestNetwork {
     @Singleton
@@ -72,9 +80,6 @@ object RestNetwork {
     ): Retrofit {
         return Retrofit.Builder().baseUrl(baseURL).client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
-
-            //.addHeader("accept", "application/json")
-            //.addHeader("Authorization", "Bearer 9457bf8ff9ecc3c20f89321525af0605")
             .build()
     }
 
@@ -94,6 +99,24 @@ object RestNetwork {
     @Provides
     fun provideDetailsApiService(retrofit: Retrofit): DetailsApiInterface {
         return retrofit.create(DetailsApiInterface::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideTvShowsRemoteDataSource(apiInterface: TvShowsApiInterface): TvShowsRemoteDataSource {
+        return TvShowsRemoteDataSourceImpl(apiInterface)
+    }
+
+    @Provides
+    @Singleton
+    fun provideTvShowsRepository(remoteDataSource: TvShowsRemoteDataSource, localDataSource: TvShowsLocalDataSource): TvShowsRepository {
+        return TvShowsRepositoryImpl(remoteDataSource,localDataSource)
+    }
+
+    @Provides
+    @Singleton
+    fun provideGetTvShowsUseCase(repository: TvShowsRepository): GetTvShows {
+        return GetTvShows(repository)
     }
 
 
