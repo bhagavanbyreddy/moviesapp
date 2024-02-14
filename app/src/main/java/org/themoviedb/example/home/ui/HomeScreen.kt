@@ -58,23 +58,6 @@ import org.themoviedb.example.util.ShimmerGridItem
 import org.themoviedb.example.util.rememberLifecycleEvent
 
 
-/*Dependency injection(annotations)
-mocking
-unit test
-flows
-coroutines
-observables
-sealed classes
-jetpack compose
-design patterns
-solid principles
-room
-usecases
-memory leaks
-exceptions
-anr
-*/
-
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun HomeScreen(navController: NavController, viewModel: HomeViewModel = viewModel()) {
